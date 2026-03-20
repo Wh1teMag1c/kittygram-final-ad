@@ -1,0 +1,42 @@
+version: '3.8'
+
+volumes:
+  pg_data:
+  static:
+  media:
+
+services:
+  db:
+    image: postgres:13
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    env_file: .env
+
+  backend:
+    # Заменяем build на готовый образ
+    image: wh1temag1c/kittygram_backend
+    env_file: .env
+    volumes:
+      - static:/app/static
+      - media:/app/media
+    depends_on:
+      - db
+
+  frontend:
+    # Заменяем build на готовый образ
+    image: wh1temag1c/kittygram_frontend
+    env_file: .env
+    command: cp -r /app/build/. /static/
+    volumes:
+      - static:/static
+
+  gateway:
+    # Заменяем build на готовый образ
+    image: wh1temag1c/kittygram_gateway
+    volumes:
+      - static:/static
+      - media:/media
+    ports:
+      - 9000:80
+    depends_on:
+      - backend
